@@ -1,1 +1,50 @@
+local library = {
 
+encrpyt = function()
+return (math.random(0,9)..math.random(0,9)..math.random(0,9)..math.random(0,9)..math.random(0,9)..math.random(0,9));
+end,
+
+text_setup = function(label)
+	label.Font = Enum.Font.SourceSansBold;
+	label.TextColor3 = Color3.fromRGB(255,255,255);
+	label.TextStrokeTransparency = .5;
+	label.TextStrokeColor3 = Color3.fromRGB(0,0,0);
+	label.TextScaled = true;
+	label.TextWrapped = true;
+end,
+
+get_corner = function(frame)
+local corner = Instance.new('UICorner');
+	corner.Name = 'corner';
+	corner.CornerRadius = UDim.new(0,12);
+	corner.Parent = frame;
+end,
+
+get_frame = function()
+local frame = Instance.new('Frame');
+	frame.BorderSizePixel = 0;
+return frame;
+end,
+
+get_button = function()
+local button = Instance.new('TextButton');
+	button.AutoButtonColor = false;
+	button.BorderSizePixel = 0;
+return button;
+end,
+
+get_label = function()
+local label = Instance.new('TextLabel');
+	label.BorderSizePixel = 0;
+return label;
+end,
+
+get_textbox = function()
+local textbox = Instance.new('TextBox');
+	textbox.BorderSizePixel = 0;
+return textbox;
+end,
+
+};
+
+return library;
