@@ -1,0 +1,50 @@
+local drag = {};
+	drag.__index = drag;
+
+function drag.Frame(frame)
+local frameDetails = {};
+	frameDetails.Frame = frame;
+	frameDetails.Dragging = false;
+
+	setmetatable(frameDetails,drag);
+return frameDetails;
+end
+
+function drag:Enable()
+local frame = self.Frame;
+local startPos = frame.Position;
+local dragPos = nil;
+
+local function updatePos(input)
+local viewWidth = ((_G.camera.ViewportSize.x-frame.AbsoluteSize.x)/2);
+local viewHeight = ((_G.camera.ViewportSize.y-frame.AbsoluteSize.y)/2);
+
+local delta = (input.Position-dragPos);
+
+local position = UDim2.new(startPos.X.Scale,math.clamp((startPos.X.Offset+delta.X),-viewWidth,viewWidth),startPos.Y.Scale,math.clamp((startPos.Y.Offset+delta.Y),-viewHeight,viewHeight));
+
+	frame.Position = position;
+return position;
+end
+
+-- START DRAG / END DRAG
+self.InputBegan = frame.InputBegan:connect(function(input)
+if ((input.UserInputType == Enum.UserInputType.MouseButton1) or (input.UserInputType == Enum.UserInputType.Touch)) then
+	dragPos = input.Position;	
+	self.Dragging = true;
+
+local connection = nil;
+	connection = input.Changed:connect(function()
+if (input.UserInputState == Enum.UserInputState.End) then
+	self.Dragging = false;
+	startPos = frame.Position;
+	connection:Disconnect();
+end end) end end)
+
+-- DETECTING MOVEMENT
+self.InputChanged = frame.InputChanged:connect(function(input)
+if (((input.UserInputType == Enum.UserInputType.MouseMovement) or (input.UserInputType == Enum.UserInputType.Touch)) and self.Dragging) then
+local position = updatePos(input);
+end end) end
+
+return drag;
