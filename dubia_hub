@@ -182,6 +182,14 @@ if (((not processed) and (not keybind_listening)) and sector) then
 activate(sector);
 end end)
 
+user.InputEnded:connect(function(input,processed)
+local sector = possibleKeybind(input.KeyCode);
+if (((not processed) and (not keybind_listening)) and sector) then
+	sector.Info.On = (not sector.Info.On);
+	sector.Info.Switch.Text = sector.Info.On and 'On' or 'Off';
+	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = sector.Info.On and Color3.fromRGB(170,255,127) or Color3.fromRGB(255,85,127)}):Play();
+end end)
+
 -- HIDE HUB
 local hubSize = background.Size;
 	
