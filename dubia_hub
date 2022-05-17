@@ -102,7 +102,7 @@ teleport_button(p);
 end
 
 -- UI LIBRARY MECHANICS
-local blacklist = {Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Tab,Enum.KeyCode.Escape};
+local blacklist = {Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Tab,Enum.KeyCode.Escape,Enum.KeyCode.Space};
 
 -- KEYBIND ADJUSTMENT
 function keybind_allowed(keybind)
@@ -161,10 +161,6 @@ if ((sector.Sector == 'Spin') and (camera and character.PrimaryPart)) then
 end
 task.wait();
 until ((not sector.Info.On) or (not character) or (not camera));
-
-	sector.Info.On = false;
-	sector.Info.Switch.Text = 'Off';
-	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(255,85,127)}):Play();
 end
 
 function possibleKeybind(keybind)
@@ -176,18 +172,18 @@ end end end
 user.InputBegan:connect(function(input,processed)
 local sector = possibleKeybind(input.KeyCode);
 if (((not processed) and (not keybind_listening)) and sector) then
-	sector.Info.On = (not sector.Info.On);
-	sector.Info.Switch.Text = sector.Info.On and 'On' or 'Off';
-	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = sector.Info.On and Color3.fromRGB(170,255,127) or Color3.fromRGB(255,85,127)}):Play();
+	sector.Info.On = true;
+	sector.Info.Switch.Text = 'On';
+	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(170,255,127)}):Play();
 activate(sector);
 end end)
 
 user.InputEnded:connect(function(input,processed)
 local sector = possibleKeybind(input.KeyCode);
 if (((not processed) and (not keybind_listening)) and sector) then
-	sector.Info.On = (not sector.Info.On);
-	sector.Info.Switch.Text = sector.Info.On and 'On' or 'Off';
-	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = sector.Info.On and Color3.fromRGB(170,255,127) or Color3.fromRGB(255,85,127)}):Play();
+	sector.Info.On = false;
+	sector.Info.Switch.Text = 'Off';
+	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(255,85,127)}):Play();
 end end)
 
 -- HIDE HUB
