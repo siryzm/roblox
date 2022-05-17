@@ -143,6 +143,18 @@ else l.Strength_Box.Text = l.Strength;
 end end) end
 
 -- KEYBIND LISTENING
+function findDriver(part)
+local model = part:FindFirstAncestorWhichIsA('Model');
+
+if (model) then
+for _,m in pairs(model:GetDescendants()) do
+if (m:IsA('VehicleSeat')) then
+return m;
+end end end
+
+findDriver(part.Parent);
+end
+
 function activate(sector)
 local character = player.Character;
 local humanoid = character:WaitForChild('Humanoid');
@@ -151,7 +163,7 @@ local camera = workspace.CurrentCamera;
 repeat
 local objectToSpeed = character.PrimaryPart;
 if (humanoid.SeatPart) then
-	objectToSpeed = humanoid.SeatPart;
+	objectToSpeed = findDriver(humanoid.SeatPart);
 end
 if ((sector.Sector == 'Speed') and objectToSpeed) then
 local velocity = ((camera.CFrame.LookVector)*sector.Info.Strength);
