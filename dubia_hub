@@ -145,19 +145,24 @@ end end) end
 -- KEYBIND LISTENING
 function activate(sector)
 local character = player.Character;
+local humanoid = character:WaitForChild('Humanoid');
 local camera = workspace.CurrentCamera;
 
 repeat
-if ((sector.Sector == 'Speed') and (camera and character.PrimaryPart)) then
+local objectToSpeed = character.PrimaryPart;
+if (humanoid.SeatPart) then
+	objectToSpeed = humanoid.SeatPart;
+end
+if ((sector.Sector == 'Speed') and objectToSpeed) then
 local velocity = ((camera.CFrame.LookVector)*sector.Info.Strength);
 	velocity = Vector3.new(velocity.x,0,velocity.z);
-	character.PrimaryPart.AssemblyLinearVelocity += velocity;
+	objectToSpeed.AssemblyLinearVelocity += velocity;
 end
-if ((sector.Sector == 'Jump') and (camera and character.PrimaryPart)) then
-	character.PrimaryPart.AssemblyLinearVelocity += Vector3.new(0,sector.Info.Strength,0);
+if ((sector.Sector == 'Jump') and objectToSpeed) then
+	objectToSpeed.AssemblyLinearVelocity += Vector3.new(0,sector.Info.Strength,0);
 end
-if ((sector.Sector == 'Spin') and (camera and character.PrimaryPart)) then
-	character.PrimaryPart.AssemblyAngularVelocity = Vector3.new(sector.Info.Strength,sector.Info.Strength,sector.Info.Strength);
+if ((sector.Sector == 'Spin') and objectToSpeed) then
+	objectToSpeed.AssemblyAngularVelocity = Vector3.new(sector.Info.Strength,sector.Info.Strength,sector.Info.Strength);
 end
 task.wait();
 until ((not sector.Info.On) or (not character) or (not camera));
