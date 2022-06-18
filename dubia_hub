@@ -1,5 +1,6 @@
 local tween = game:GetService('TweenService');
 local user = game:GetService('UserInputService');
+local run = game:GetService('RunService');
 
 local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/library'))();
 local drag = loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/drag'))();
@@ -160,7 +161,7 @@ end
 if ((sector.Sector == 'Spin') and objectToSpeed) then
 	objectToSpeed.AssemblyAngularVelocity = Vector3.new(sector.Info.Strength,sector.Info.Strength,sector.Info.Strength);
 end
-task.wait();
+run.Heartbeat:wait();
 until ((not sector.Info.On) or (not character) or (not camera));
 end
 
