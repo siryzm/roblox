@@ -7,6 +7,7 @@ local tween = game:GetService('TweenService');
 local run = game:GetService('RunService');
 
 local ui_library = {};
+local inputs = {};
 
 local key_blacklist = {Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Tab,Enum.KeyCode.Escape,Enum.KeyCode.Space};
 local keybind_listening = false;
@@ -185,7 +186,7 @@ end end)
 
 end
 
-user.InputBegan:connect(function(input,processed)
+local start_press = user.InputBegan:connect(function(input,processed)
 local info = valid_keybind(input.KeyCode);
 if ((not keybind_listening) and (not processed) and info) then
 	info.On = true;
@@ -194,7 +195,7 @@ if ((not keybind_listening) and (not processed) and info) then
 activate_keybind(info);
 end end)
 
-user.InputEnded:connect(function(input,processed)
+local end_press = user.InputEnded:connect(function(input,processed)
 local info = valid_keybind(input.KeyCode);
 if ((not processed) and info) then
 	info.On = false;
@@ -202,8 +203,14 @@ if ((not processed) and info) then
 	tween:Create(info.Toggle,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(255,85,127)}):Play();
 end end)
 
+	inputs['start'] = start_press;
+	inputs['end'] = end_press;
+
 default.close.Event:connect(function()
 	force_stop = true;
+for _,i in pairs(inputs) do
+	i:Disconnect();
+end
 end)
 end
 
