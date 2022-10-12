@@ -212,7 +212,7 @@ lib:Start();
 end
 
 load_libraries(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/dubia_default'));
-task.wait(2);
+task.wait(1);
 
 	frame:TweenPosition(UDim2.new(.5,-300,.5,-200),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
 	tween:Create(stroke,TweenInfo.new(.5,Enum.EasingStyle.Linear),{Thickness = 7.5}):Play();
