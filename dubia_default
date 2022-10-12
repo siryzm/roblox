@@ -1,0 +1,210 @@
+local default = {};
+
+local force_stop = false;
+
+local user = game:GetService('UserInputService');
+local tween = game:GetService('TweenService');
+local run = game:GetService('RunService');
+
+local ui_library = {};
+
+local key_blacklist = {Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Tab,Enum.KeyCode.Escape,Enum.KeyCode.Space};
+local keybind_listening = false;
+
+local player = game.Players.LocalPlayer;
+
+-- CREATING TOGGLES
+function button_group(name,keybind,strength)
+local frame = default.create_instance('Frame',
+{BackgroundTransparency = 1;
+Size = UDim2.new(1,-20,0,40);
+});
+
+default.create_instance('TextLabel',
+{Text = name;
+BackgroundColor3 = Color3.fromRGB(0,0,0);
+Size = UDim2.new(0,120,1,0);
+default.text_default;
+Parent = frame;
+});
+
+local toggle = default.create_instance('TextButton',
+{Text = 'Off';
+BackgroundColor3 = Color3.fromRGB(255,85,127);
+Position = UDim2.new(0,130,0,0);
+AutoButtonColor = false;
+Size = UDim2.new(0,60,1,0);
+default.text_default;
+Parent = frame;
+});
+
+local key_button = default.create_instance('TextButton',
+{Text = user:GetStringForKeyCode(keybind);
+BackgroundColor3 = Color3.fromRGB(111,101,255);
+Position = UDim2.new(0,200,0,0);
+Size = UDim2.new(0,60,1,0);
+AutoButtonColor = false;
+default.text_default;
+Parent = frame;
+});
+
+local strength_box = default.create_instance('TextBox',
+{Text = strength;
+BackgroundColor3 = Color3.fromRGB(0,0,0);
+Size = UDim2.new(0,60,1,0);
+Position = UDim2.new(0,270,0,0);
+default.text_default;
+Parent = frame;
+});
+
+return {Frame = frame,Info = {Name = name,Toggle = toggle,On = false,Key_Button = key_button,Keybind = keybind,Strength_Box = strength_box,Strength = strength}};
+end
+
+-- VALIDATE KEYBIND
+function valid_keybind(keybind)
+for l,i in pairs(ui_library) do
+if (i.Keybind == keybind) then
+return i;
+end end end
+
+function can_change(keybind)
+for _,l in pairs(ui_library) do
+if (l.Keybind == keybind) then
+return false;
+end end
+if (table.find(key_blacklist,keybind)) then
+return false;
+end
+return true;
+end
+
+-- CONTROLS
+function activate_keybind(info)
+local character = player.Character;
+local camera = workspace.CurrentCamera;
+
+repeat
+local primary = character.PrimaryPart;
+
+if ((info.Name == 'Speed') and primary) then
+local velocity = ((camera.CFrame.LookVector)*info.Strength);
+	velocity = Vector3.new(velocity.x,0,velocity.z);
+	primary.AssemblyLinearVelocity += velocity;	
+end
+
+if ((info.Name == 'Jump') and primary) then
+	primary.AssemblyLinearVelocity += Vector3.new(0,info.Strength,0);
+end
+
+if ((info.Name == 'Spin') and primary) then
+	primary.AssemblyAngularVelocity = Vector3.new(0,-info.Strength,0);
+end
+
+run.Heartbeat:wait();
+until ((not info.On) or (not character) or (not camera) or (force_stop));
+end
+
+-- MAIN SYSTEM
+function default:Start()
+default.create_instance('TextButton',
+{BackgroundColor3 = Color3.fromRGB(0,0,0);
+Size = UDim2.new(0,180,0,40);
+Text = 'DEFAULT';
+default.text_default;
+AutoButtonColor = false;
+Parent = default.base_uis.Options;
+});
+
+local frame = default.create_instance('ScrollingFrame',
+{Size = UDim2.new(1,-10,1,-10);
+Position = UDim2.new(0,10,0,10);
+BorderSizePixel = 0;
+ScrollBarThickness = 10;
+ScrollBarImageColor3 = Color3.fromRGB(0,0,0);
+CanvasSize = UDim2.new(0,0,0,0);
+BackgroundTransparency = 1;
+Name = 'default';
+Parent = default.base_uis.Libraries;
+}); 
+
+local speed = button_group('Speed',Enum.KeyCode.Z,2);
+	speed.Frame.Parent = frame;
+
+local spin = button_group('Spin',Enum.KeyCode.X,25);
+	spin.Frame.Position = UDim2.new(0,0,0,50);
+	spin.Frame.Parent = frame;
+
+local jump = button_group('Jump',Enum.KeyCode.C,5);
+	jump.Frame.Position = UDim2.new(0,0,0,100);
+	jump.Frame.Parent = frame;
+
+ui_library['Speed'] = speed.Info;
+ui_library['Spin'] = spin.Info;
+ui_library['Jump'] = jump.Info;
+
+-- MECHANICS
+for _,l in pairs(ui_library) do
+l.Toggle.InputBegan:connect(function(input)
+if (input.UserInputType == Enum.UserInputType.MouseButton1) then
+	l.On = true;
+	l.Toggle.Text = 'On';
+	tween:Create(l.Toggle,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(170,255,127)}):Play();
+activate_keybind(l);
+end	end)
+
+l.Toggle.InputEnded:connect(function(input)
+if (input.UserInputType == Enum.UserInputType.MouseButton1) then
+	l.On = false;
+	l.Toggle.Text = 'Off';
+	tween:Create(l.Toggle,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(255,85,127)}):Play();
+end	end)
+
+l.Strength_Box.FocusLost:connect(function()
+local strength = tonumber(l.Strength_Box.Text);
+if (strength) then
+	l.Strength = strength;
+else l.Strength_Box.Text = l.Strength;
+end end)
+
+l.Key_Button.MouseButton1Down:connect(function()
+if (not keybind_listening) then
+	keybind_listening = true;
+	tween:Create(l.Key_Button,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(170,255,127)}):Play();
+local key = user.InputEnded:connect(function(input,processed)
+if ((not processed) and ((input.KeyCode ~= Enum.KeyCode.Unknown) and can_change(input.KeyCode))) then
+	l.Keybind = input.KeyCode;
+	l.Key_Button.Text = user:GetStringForKeyCode(input.KeyCode);
+	keybind_listening = false;
+end end) 
+coroutine.wrap(function()
+repeat task.wait() until ((not keybind_listening) or force_stop);
+	key:Disconnect();
+	tween:Create(l.Key_Button,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(111,101,255)}):Play();
+end)();
+end end)
+
+end
+
+user.InputBegan:connect(function(input,processed)
+local info = valid_keybind(input.KeyCode);
+if ((not keybind_listening) and (not processed) and info) then
+	info.On = true;
+	info.Toggle.Text = 'On';
+	tween:Create(info.Toggle,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(170,255,127)}):Play();
+activate_keybind(info);
+end end)
+
+user.InputEnded:connect(function(input,processed)
+local info = valid_keybind(input.KeyCode);
+if ((not processed) and info) then
+	info.On = false;
+	info.Toggle.Text = 'Off';
+	tween:Create(info.Toggle,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(255,85,127)}):Play();
+end end)
+
+default.close.Event:connect(function()
+	force_stop = true;
+end)
+end
+
+return default;
