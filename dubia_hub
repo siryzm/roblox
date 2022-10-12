@@ -198,7 +198,7 @@ Parent = frame;
 local library_selected = 'default';
 
 function load_libraries(lib)
-local lib = lib();
+local lib = loadstring(lib)();
 	lib.create_instance = library.create_instance;
 	lib.text_default = text_default;
 	lib.base_uis = {
@@ -211,7 +211,7 @@ local lib = lib();
 lib:Start();
 end
 
-load_libraries(loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/dubia_default')));
+load_libraries(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/dubia_default'));
 task.wait(2);
 
 	frame:TweenPosition(UDim2.new(.5,-300,.5,-200),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
