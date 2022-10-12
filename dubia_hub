@@ -198,7 +198,7 @@ Parent = frame;
 local library_selected = 'default';
 
 function load_libraries(lib)
-local lib = require(lib);
+local lib = lib();
 	lib.create_instance = library.create_instance;
 	lib.text_default = text_default;
 	lib.base_uis = {
