@@ -1,7 +1,6 @@
 local drag = {};
 	drag.__index = drag;
 
-
 function drag.Frame(frame)
 local frameDetails = {};
 	frameDetails.Frame = frame;
