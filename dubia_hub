@@ -1,203 +1,231 @@
+local library = {};
+	library.__index = library;
+
 local tween = game:GetService('TweenService');
 local user = game:GetService('UserInputService');
-local run = game:GetService('RunService');
-
-local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/library'))();
-local drag = loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/drag'))();
-
-local UILibrary = {
-	Spin = nil;
-	Jump = nil;
-	Speed = nil;
-}
 
 local player = game.Players.LocalPlayer;
+local player_ui = player:WaitForChild('PlayerGui');
 
-local keybind_listening = false;
+local close = Instance.new('BindableEvent');
 
-local hub = Instance.new('ScreenGui');
-	hub.Name = library.encrpyt();
+-- MISC VARIABLES
+local text_default = {
+TextColor3 = Color3.fromRGB(255,255,255);
+TextScaled = true;
+TextStrokeTransparency = .5;
+Font = Enum.Font.SourceSansBold;
+};
 
-local background = library.get_frame();
-	library.get_corner(background);
+local load_speeds = 3;
+local auto_corner = {'Frame','TextButton','TextBox','TextLabel','ImageButton'};
 
-	background.Size = UDim2.new(0,460,0,250);
-	background.Position = UDim2.new(.5,-230,.5,-125);
-	background.BackgroundColor3 = Color3.fromRGB(0,0,0);
-	background.ClipsDescendants = true;
-	background.Parent = hub;
+-- INSTANCE CREATION
+library.create_instance = function(ins,data)
+local instance = Instance.new(ins);
 
-local title = library.get_label();
-	library.text_setup(title);
-	
-	title.Size = UDim2.new(1,0,0,25);
-	title.BackgroundColor3 = Color3.fromRGB(85,85,127);
-	title.Text = 'Dubia Hub';
-	title.Parent = background;
-
-local collapse = library.get_button();
-	library.text_setup(collapse);
-
-	collapse.BackgroundTransparency = 1;
-	collapse.Size = UDim2.new(0,25,0,25);
-	collapse.Position = UDim2.new(1,-25,0,2);
-	collapse.Text = 'v';
-	collapse.Rotation = 180;
-	collapse.Parent = title;
-
-local speed = library.create_sector('Dubia Hub','Speed',Enum.KeyCode.Z,2,UDim2.new(0,10,0,35));
-	speed.Sector.Parent = background;
-	UILibrary['Speed'] = speed.Info;
-
-local spin = library.create_sector('Dubia Hub','Spin',Enum.KeyCode.X,25,UDim2.new(0,10,0,75));
-	spin.Sector.Parent = background;
-	UILibrary['Spin'] = spin.Info;
-
-local jump = library.create_sector('Dubia Hub','Jump',Enum.KeyCode.C,5,UDim2.new(0,10,0,115));
-	jump.Sector.Parent = background;
-	UILibrary['Jump'] = jump.Info;
-
-local menu = library.get_frame();  
-	library.get_corner(menu);
-
-	menu.Size = UDim2.new(0,150,0,205);
-	menu.Position = UDim2.new(0,300,0,35);
-	menu.BackgroundColor3 = Color3.fromRGB(25,25,25);
-	menu.Parent = background;
-
-local scroll = library.get_scroll();
-	scroll.Scroll.ScrollBarImageColor3 = Color3.fromRGB(85,85,127);
-	scroll.Scroll.Parent = menu;
-
-  syn.protect_gui(hub);
-	hub.Parent = game:GetService('CoreGui');
-
--- MENU MECHANICS
-function teleport_button(plr)
-if ((plr ~= player) and (not scroll.Scroll:FindFirstChild(plr.Name))) then
-local button = library.get_button();
-	library.text_setup(button);
-	library.get_corner(button);
-
-	button.BackgroundColor3 = Color3.fromRGB(85,85,127);
-	button.Size = UDim2.new(1,-10,0,25);
-	button.Text = (plr.DisplayName..' | @'..plr.Name);
-	button.Name = plr.Name;
-	button.Parent = scroll.Scroll;
-	scroll.Scroll.CanvasSize = UDim2.new(0,0,0,(scroll.List.AbsoluteContentSize.Y));
-
-button.MouseButton1Down:connect(function()
-local teleport_speed = 0;
-if ((player.Character and player.Character.PrimaryPart) and (plr.Character and plr.Character.PrimaryPart)) then
-	teleport_speed = math.clamp((((player.Character.PrimaryPart.CFrame.Position-plr.Character.PrimaryPart.CFrame.Position).magnitude)/450),0,5);
-	tween:Create(player.Character.PrimaryPart,TweenInfo.new(teleport_speed,Enum.EasingStyle.Linear),{CFrame = plr.Character.PrimaryPart.CFrame}):Play();
-end end) end end
-
-game.Players.PlayerAdded:connect(teleport_button);
-game.Players.PlayerRemoving:connect(function(plr)
-if (scroll.Scroll:FindFirstChild(plr.Name)) then
-	scroll.Scroll:WaitForChild(plr.Name):Destroy();
-end end)
-for _,p in pairs(game.Players:GetPlayers()) do
-teleport_button(p);
-end
-
--- UI LIBRARY MECHANICS
-local blacklist = {Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Tab,Enum.KeyCode.Escape,Enum.KeyCode.Space};
-
--- KEYBIND ADJUSTMENT
-function keybind_allowed(keybind)
-for _,l in pairs(UILibrary) do
-if (l.Keybind == keybind) then
-return false;
-end end
-if (table.find(blacklist,keybind)) then
-return false;
-end
-return true;
-end
-
-for _,l in pairs(UILibrary) do
-l.Keybind_Button.MouseButton1Down:connect(function()
-if (not keybind_listening) then
-	keybind_listening = true;
-	tween:Create(l.Keybind_Button,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(170,255,127)}):Play();
-local key = user.InputEnded:connect(function(input,processed)
-if ((not processed) and ((input.KeyCode ~= Enum.KeyCode.Unknown) and keybind_allowed(input.KeyCode))) then
-	l.Keybind = input.KeyCode;
-	l.Keybind_Button.Text = user:GetStringForKeyCode(input.KeyCode);
-	keybind_listening = false;
-end end) 
-coroutine.wrap(function()
-repeat task.wait() until (not keybind_listening);
-	key:Disconnect();
-	tween:Create(l.Keybind_Button,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(85,85,127)}):Play();
-end)();
-end end) end
-
--- POWER ADJUSTMENT
-for _,l in pairs(UILibrary) do
-l.Strength_Box.FocusLost:connect(function()
-if (tonumber(l.Strength_Box.Text)) then
-	l.Strength = l.Strength_Box.Text;
-else l.Strength_Box.Text = l.Strength;
-end end) end
-
--- KEYBIND LISTENING
-function activate(sector)
-local character = player.Character;
-local camera = workspace.CurrentCamera;
-
-repeat
-local objectToSpeed = character.PrimaryPart;
-if ((sector.Sector == 'Speed') and objectToSpeed) then
-local velocity = ((camera.CFrame.LookVector)*sector.Info.Strength);
-	velocity = Vector3.new(velocity.x,0,velocity.z);
-	objectToSpeed.AssemblyLinearVelocity += velocity;
-end
-if ((sector.Sector == 'Jump') and objectToSpeed) then
-	objectToSpeed.AssemblyLinearVelocity += Vector3.new(0,sector.Info.Strength,0);
-end
-if ((sector.Sector == 'Spin') and objectToSpeed) then
-	objectToSpeed.AssemblyAngularVelocity = Vector3.new(sector.Info.Strength,sector.Info.Strength,sector.Info.Strength);
-end
-run.Heartbeat:wait();
-until ((not sector.Info.On) or (not character) or (not camera));
-end
-
-function possibleKeybind(keybind)
-for l,i in pairs(UILibrary) do
-if (i.Keybind == keybind) then
-return {Sector = l,Info = i};
+local function get_properties(_data)
+for prop,var in pairs(_data) do
+if (typeof(var) == 'thread') then
+coroutine.resume(var,instance);
+elseif (typeof(var) == 'table') then
+get_properties(var);
+else
+	instance[prop] = var;
 end end end
 
+if (table.find(auto_corner,instance.ClassName)) then
+library.create_instance('UICorner',{CornerRadius = UDim.new(0,15),Parent = instance});
+end
+
+get_properties(data);
+return instance;
+end
+
+-- STARTING LOADING PROCESS
+local ui = library.create_instance('ScreenGui',
+{Name = 'dubia_hub';
+DisplayOrder = 999999999;
+ResetOnSpawn = false;
+});
+	syn.protect_gui(ui);
+	ui.Parent = game:GetService('CoreGui');
+
+-- MAIN FRAME
+local frame = library.create_instance('Frame',
+{BackgroundColor3 = Color3.fromRGB(50,50,50);
+BorderSizePixel = 0;
+ClipsDescendants = true;
+Size = UDim2.new(0,200,0,100);
+Position = UDim2.new(.5,-100,.5,-50);
+Parent = ui;
+});
+
+local stroke = library.create_instance('UIStroke',
+{Thickness = 7.5;
+Color = Color3.fromRGB(255,255,255);
+Parent = frame;
+});
+
+library.create_instance('UIGradient',
+{Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(255,219,155)),
+					ColorSequenceKeypoint.new(1,Color3.fromRGB(111,101,255))});
+Parent = stroke;
+Gradient_Loop = coroutine.create(function(instance)
+while (task.wait()) do
+if (not instance.Parent) then break; end
+	instance.Rotation += (math.pi/2);
+end end)
+});
+
+-- LOADING DOTS
+local dots = library.create_instance('TextLabel',
+{Size = UDim2.new(1,0,1,0);
+BackgroundTransparency = 1;
+Text = '...';
+text_default;
+Parent = frame;
+});
+
+local dot_gradient = library.create_instance('UIGradient',
+{Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(111,101,255)),
+					ColorSequenceKeypoint.new(1,Color3.fromRGB(255,219,155))});
+Offset = Vector2.new(-.5,0);
+Parent = dots;
+Offset_Loop = coroutine.create(function(instance)
+while (task.wait()) do
+if (not instance.Parent) then break; end
+	instance.Rotation += (math.pi/2);
+end end)
+});
+
+task.wait(load_speeds);
+
+	tween:Create(dots,TweenInfo.new(.5,Enum.EasingStyle.Linear),{TextTransparency = 1,TextStrokeTransparency = 1}):Play();
+task.wait(.5);
+
+	frame:TweenSizeAndPosition(UDim2.new(0,0,0,0),UDim2.new(.5,0,.5,0),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
+	tween:Create(stroke,TweenInfo.new(.5,Enum.EasingStyle.Linear),{Thickness = 0}):Play();
+task.wait(.5);
+
+	dots:Destroy();
+	dot_gradient:Destroy();
+	frame:TweenSizeAndPosition(UDim2.new(0,600,0,400),UDim2.new(.5,-300,1.1,0),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,0,true);
+
+-- CREATING TOP MENU
+local top_bar = library.create_instance('Frame',
+{BackgroundColor3 = Color3.fromRGB(25,25,25);
+BorderSizePixel = 0;
+Size = UDim2.new(0,580,0,60);
+Position = UDim2.new(0,10,0,10);
+Parent = frame;
+});
+
+library.create_instance('TextLabel',
+{Size = UDim2.new(0,300,0,40);
+Position = UDim2.new(0,10,0,10);
+Text = ('dubia hub 3.0 | by siryzm');
+BackgroundTransparency = 1;
+TextXAlignment = Enum.TextXAlignment.Left;
+text_default;
+Parent = top_bar;
+});
+
+library.create_instance('TextButton',
+{Size = UDim2.new(0,40,0,40);
+Position = UDim2.new(1,-50,0,10);
+Text = 'X';
+BackgroundColor3 = Color3.fromRGB(0,0,0);
+text_default;
+AutoButtonColor = false;
+Parent = top_bar;
+Function = coroutine.create(function(instance)
+instance.MouseButton1Down:connect(function()
+	ui:Destroy();
+	close:Fire();
+task.wait(1);
+	close:Destroy();
+	script:Destroy();
+end)
+end)
+});
+
+library.create_instance('TextButton',
+{Size = UDim2.new(0,40,0,40);
+Position = UDim2.new(1,((-40*2)-20),0,10);
+Text = '-';
+BackgroundColor3 = Color3.fromRGB(0,0,0);
+text_default;
+AutoButtonColor = false;
+Parent = top_bar;
+Function = coroutine.create(function(instance)
+local closed = false;
+instance.MouseButton1Down:connect(function()
+	closed = (not closed);
+	instance.Text = (closed and '+' or '-');
+	frame:TweenSize((closed and UDim2.new(0,600,0,80) or UDim2.new(0,600,0,400)),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
+end) 
+end)
+});
+
+local option_holder = library.create_instance('Frame',
+{Size = UDim2.new(0,210,0,310);
+Position = UDim2.new(0,10,0,80);
+BackgroundColor3 = Color3.fromRGB(25,25,25);
+Parent = frame;
+});
+
+local options = library.create_instance('ScrollingFrame',
+{Size = UDim2.new(1,-10,1,-10);
+Position = UDim2.new(0,10,0,10);
+BorderSizePixel = 0;
+BackgroundTransparency = 1;
+ScrollBarThickness = 10;
+ScrollBarImageColor3 = Color3.fromRGB(0,0,0);
+CanvasSize = UDim2.new(0,0,0,0);
+Parent = option_holder;
+});
+library.create_instance('UIListLayout',{Padding = UDim.new(0,10),Parent = options});
+
+local libraries = library.create_instance('Frame',
+{Size = UDim2.new(0,360,0,310);
+Position = UDim2.new(0,230,0,80);
+BackgroundColor3 = Color3.fromRGB(25,25,25);
+Parent = frame;
+});
+
+-- LOADING LIBRARIES
+local library_selected = 'default';
+
+function load_libraries(lib)
+local lib = require(lib);
+	lib.create_instance = library.create_instance;
+	lib.text_default = text_default;
+	lib.base_uis = {
+	Hub = ui;
+	Libraries = libraries;
+	Options = options;
+	};
+	lib.close = close;
+
+lib:Start();
+end
+
+load_libraries(loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/dubia_default')));
+task.wait(2);
+
+	frame:TweenPosition(UDim2.new(.5,-300,.5,-200),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
+	tween:Create(stroke,TweenInfo.new(.5,Enum.EasingStyle.Linear),{Thickness = 7.5}):Play();
+
+-- VISUALLY HIDING
 user.InputBegan:connect(function(input,processed)
-local sector = possibleKeybind(input.KeyCode);
-if (((not processed) and (not keybind_listening)) and sector) then
-	sector.Info.On = true;
-	sector.Info.Switch.Text = 'On';
-	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(170,255,127)}):Play();
-activate(sector);
+if ((input.KeyCode == Enum.KeyCode.RightControl) and (not processed)) then
+	ui.Enabled = (not ui.Enabled);
 end end)
 
-user.InputEnded:connect(function(input,processed)
-local sector = possibleKeybind(input.KeyCode);
-if (((not processed) and (not keybind_listening)) and sector) then
-	sector.Info.On = false;
-	sector.Info.Switch.Text = 'Off';
-	tween:Create(sector.Info.Switch,TweenInfo.new(.5,Enum.EasingStyle.Linear),{BackgroundColor3 = Color3.fromRGB(255,85,127)}):Play();
-end end)
-
--- HIDE HUB
-local hubSize = background.Size;
+task.wait(.5);
+local ui_drag = loadstring(game:HttpGet('https://raw.githubusercontent.com/siryzm/roblox/main/ui_drag'))();
+local hub_drag = ui_drag.Frame(frame);
+	hub_drag:Enable();
 	
-collapse.MouseButton1Down:connect(function()
-if (background.Size == hubSize) then
-	background:TweenSize(UDim2.new(0,hubSize.X.Offset,0,25),Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
-	tween:Create(collapse,TweenInfo.new(.5,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Rotation = 0,Position = UDim2.new(1,-25,0,-2)}):Play();
-else background:TweenSize(hubSize,Enum.EasingDirection.InOut,Enum.EasingStyle.Sine,.5,true);
-	tween:Create(collapse,TweenInfo.new(.5,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Rotation = 180,Position = UDim2.new(1,-25,0,2)}):Play();
-end end)
-
-local hubDrag = drag.Frame(background);
-	hubDrag:Enable();
+return library;
